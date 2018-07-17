@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.example.dan.chitchat.MainActivity">
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/action_sign_out"
         android:orderInCategory="100"
         android:title="@string/sign_out"
         app:showAsAction="never" />

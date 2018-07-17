@@ -13,6 +13,7 @@ import android.widget.TextView;
 import com.example.dan.chitchat.Model.Chat;
 import com.example.dan.chitchat.R;
 
+import java.util.ArrayList;
 import java.util.List;
 import com.bumptech.glide.Glide;
 
@@ -22,9 +23,9 @@ import com.bumptech.glide.Glide;
 
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatListViewHolder> {
     private Context mContext;
-    private List<Chat> mChatList;
+    private ArrayList<Chat> mChatList;
 
-    public ChatAdapter(Context mContext, List<Chat> mChatList) {
+    public ChatAdapter(Context mContext, ArrayList<Chat> mChatList) {
         this.mContext = mContext;
         this.mChatList = mChatList;
     }
@@ -40,6 +41,8 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatListViewHo
 
     @Override
     public void onBindViewHolder(@NonNull ChatListViewHolder holder, int position) {
+
+
         final Chat message = mChatList.get(position);
         boolean isPhoto = message.getPhotoUrl() != null;
         if (isPhoto) {
@@ -54,6 +57,12 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatListViewHo
             holder.messageTextView.setText(message.getMessages());
         }
         holder.authorTextView.setText(message.getName());
+    }
+
+
+    public void addChat(Chat chat){
+        mChatList.add(chat);
+        notifyItemInserted(mChatList.size());
     }
 
     @Override

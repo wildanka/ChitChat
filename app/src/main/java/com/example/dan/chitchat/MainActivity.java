@@ -1,6 +1,7 @@
 package com.example.dan.chitchat;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -139,13 +140,10 @@ public class MainActivity extends AppCompatActivity {
                 mChatDatabaseReference.push().setValue(chatMessage);
                 //Clear input box
                 mMessageEditText.setText("");
-                attachDatabaseReadListener();
             }
         });
 
-        attachDatabaseReadListener();
-
-        /*mAuthStateListener = new FirebaseAuth.AuthStateListener() {
+        mAuthStateListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
              // Check if user is signed in or not
@@ -156,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
                     Toast.makeText(MainActivity.this, "You're now signed in. Enjoy some ChitChat",Toast.LENGTH_SHORT).show();
                 }else{
                     // User is sign out
-                    onSigneOutCleanUp();
+                    onSignOutCleanUp();
                     startActivityForResult(
                             AuthUI.getInstance()
                                     .createSignInIntentBuilder()
@@ -168,18 +166,23 @@ public class MainActivity extends AppCompatActivity {
                             RC_SIGN_IN);
                 }
             }
-        };*/
-       /* FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });*/
+        };
     }
 
-        @Override
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == RC_SIGN_IN){
+            if (resultCode == RESULT_OK){
+                Toast.makeText(this,"Signed in!",Toast.LENGTH_SHORT).show();
+            }else{
+                Toast.makeText(this,"Sign in cancelled",Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        }
+    }
+
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         MenuInflater menuInflater = getMenuInflater();
@@ -192,27 +195,28 @@ public class MainActivity extends AppCompatActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
+        switch (item.getItemId()){
+            case R.id.action_sign_out:
+                // sign out
+                AuthUI.getInstance().signOut(this);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
         }
-
-        return super.onOptionsItemSelected(item);
     }
 
-//    @Override
-//    protected void onPause() {
-//        super.onPause();
-//        mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
-//    }
-//
-//    @Override
-//    protected void onResume(){
-//        super.onResume();
-//        mFirebaseAuth.addAuthStateListener(mAuthStateListener);
-//    }
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mFirebaseAuth.removeAuthStateListener(mAuthStateListener);
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        mFirebaseAuth.addAuthStateListener(mAuthStateListener);
+    }
 
     private void generateMessage(){
         mChatList.add(
@@ -232,13 +236,14 @@ public class MainActivity extends AppCompatActivity {
         attachDatabaseReadListener();
     }
 
-    private void onSigneOutCleanUp(){
+    private void onSignOutCleanUp(){
         mUsername = ANONYMOUS;
         detachDatabaseReadListener();
         mChatList.clear();
     }
 
     private void attachDatabaseReadListener(){
+
         if (mChildEventListener == null){
             // Create Listener for Listen the Child Event
             mChildEventListener = new ChildEventListener() {
@@ -246,9 +251,9 @@ public class MainActivity extends AppCompatActivity {
                 public void onChildAdded(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                     //called when a new message is inserted on to the list
                     Chat chatMessage = dataSnapshot.getValue(Chat.class); // Deserialize dataSnapshot into our Plain Java Model
-                    mChatList.add(chatMessage);
+                    mChatAdapter.addChat(chatMessage);
+//                    mChatList.add(chatMessage);
                 }
-
                 @Override
                 public void onChildChanged(@NonNull DataSnapshot dataSnapshot, @Nullable String s) {
                     //when Content of existing child changed
